@@ -63,9 +63,6 @@
 
 ; Just A-star, like the graph-search.
 (defun A-star (fringe closed heurf)
-  "Given a priority queue, pop a node to check if it is goal node.
-   If not, insert the expanded nodes to the queue and call A-star
-   again. Nothing special, the essence is in function expand."
   (when fringe
     (let ((node (q-front fringe)))
       (q-remove fringe)
