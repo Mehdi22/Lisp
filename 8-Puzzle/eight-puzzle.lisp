@@ -173,7 +173,7 @@
 (defun is-same-state (s1 s2)
   (equal s1 s2))
 
-; find the location of zerp, or gap, or space.
+; find the location of zero, or gap, or space.
 (defun find-gap (puzzle-state)
   "find the location of zero"
   (loop for i from 0 to 8
