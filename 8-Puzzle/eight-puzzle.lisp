@@ -72,11 +72,12 @@
 		     (lambda (x y)
 		       (is-same-state (node-state x) (node-state y))))
 	     (incf *nodes-expanded*)
-	     (A-star (q-insert fringe (expand heurf node)) closed heurf))
+	     (A-star fringe closed heurf))
 	    (t (incf *nodes-expanded*)
 	       (A-star (q-insert fringe (expand heurf node))
 		       (cons node closed) heurf))
-	  ))))
+	  ))
+    ))
 
 ; Function expand calls function generate-child to generate each successor.
 ; And at last return a list of successors.
@@ -128,15 +129,32 @@
 		      ))))
     mis-num))
 
-(defun manhattan-distance (puzzle-state)
-  (let ((state (copy-list puzzle-state))
-	(total-dst 0))
+(defun manhattan-distance (state)
+  (let ((total-dst 0))
     (loop for i from 0 to 8
 	 do (let* ((num (elt state i))
 		   (dst (elt (elt *distance* i) num)))
 	      ; Blank is not a real tile
 	      (if (/= num 0)
 		  (setf total-dst (+ total-dst dst)))
+	      ))
+    total-dst))
+
+; Debug need
+(defun reversal-distance (puzzle-state)
+  (let ((state (copy-list puzzle-state))
+	(total-dst 0))
+    (loop for i from 0 to 8
+	 do (let ((num (elt state i)))
+	      (loop while (/= num i)
+		   do (let ((dst (elt (elt *distance* i) num)))
+			(setf (elt state i) (elt state num))
+			(setf (elt state num) num)
+			(if (or (= num 0) (= (elt state i) 0))
+			    (setf total-dst (+ total-dst dst))
+			    (setf total-dst (+ total-dst (* dst 2))))
+			(setf num (elt state i))
+			))
 	      ))
     total-dst))
 
