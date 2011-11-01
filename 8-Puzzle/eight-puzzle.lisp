@@ -121,22 +121,22 @@
 (defun misplaced-tiles (state)
   (let ((mis-num 0))
     (loop for i from 0 to 8
-	 do (if (/= (elt state i) (elt '(0 1 2 3 4 5 6 7 8) i))
-		(setf mis-num (1+ mis-num))))
+	 do (let ((num (elt state i)))
+	      (when (/= num 0)
+		  (when (/= num i)
+		      (setf mis-num (1+ mis-num))
+		      ))))
     mis-num))
 
 (defun manhattan-distance (puzzle-state)
   (let ((state (copy-list puzzle-state))
 	(total-dst 0))
     (loop for i from 0 to 8
-	 do (let ((num (elt state i)))
-	      (loop while (/= num i)
-		   do (let ((dst (elt (elt *distance* i) num)))
-			(setf (elt state i) (elt state num))
-		        (setf (elt state num) num)
-		        (setf total-dst (+ total-dst dst))
-			(setf num (elt state i))
-			))
+	 do (let* ((num (elt state i))
+		   (dst (elt (elt *distance* i) num)))
+	      ; Blank is not a real tile
+	      (if (/= num 0)
+		  (setf total-dst (+ total-dst dst)))
 	      ))
     total-dst))
 
