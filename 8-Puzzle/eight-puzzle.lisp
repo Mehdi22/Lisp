@@ -35,6 +35,21 @@
     (4 3 2 3 2 1 2 1 0) ; tile 8
     ))
 
+(defvar *conflict*	; 0 means no conflict              Graph 4 5 6
+  			; 1-3 means conflict line is line 1-3 | 1
+  			; 4-6 means conflict line is row 1-3  | 2
+  			;                                     | 3
+  '((0 1 1 4 0 0 4 0 0)	; tile 0
+    (1 0 1 0 5 0 0 5 0) ; tile 1
+    (1 1 0 0 0 6 0 0 6) ; tile 2
+    (4 0 0 0 2 2 4 0 0) ; tile 3
+    (0 5 0 2 0 2 0 5 0) ; tile 4
+    (0 0 6 2 2 0 0 0 6) ; tile 5
+    (4 0 0 4 0 0 0 3 3) ; tile 6
+    (0 5 0 0 5 0 3 0 3) ; tile 7
+    (0 0 6 0 0 6 3 3 0) ; tile 8
+    ))
+
 (defvar *nodes-expanded* 0)
 
 ; *** main functions ***
@@ -140,23 +155,56 @@
 	      ))
     total-dst))
 
-; Debug need
-(defun reversal-distance (puzzle-state)
-  (let ((state (copy-list puzzle-state))
-	(total-dst 0))
+(defun linear-conflict (state)
+  (let ((total-dst 0))
     (loop for i from 0 to 8
-	 do (let ((num (elt state i)))
-	      (loop while (/= num i)
-		   do (let ((dst (elt (elt *distance* i) num)))
-			(setf (elt state i) (elt state num))
-			(setf (elt state num) num)
-			(if (or (= num 0) (= (elt state i) 0))
-			    (setf total-dst (+ total-dst dst))
-			    (setf total-dst (+ total-dst (* dst 2))))
-			(setf num (elt state i))
-			))
+	 do (let* ((num (elt state i))
+		   (dst (elt (elt *distance* i) num)))
+	      ; Blank is not a real tile
+	      (if (/= num 0)
+		  (progn
+		    (when (is-linear-conflict state i)
+		      ; In 8 puzzle, linear-conflict can only be
+		      ; manhattandistance + 2. Because there is
+		      ; only one situtaion: like (2 0 1 ...)
+		      (setf dst (+ dst 2)))
+		    (setf total-dst (+ total-dst dst))
+		    ))
 	      ))
     total-dst))
+
+(defun is-linear-conflict (state index)
+  "Check if state(index) and state(state(index)) is linear conflict."
+  (let* ((num (elt state index))
+	 (num_goal (elt state num))
+	 ; if num(pos:index) and num_goal(pos:num) are in the same line ?
+	 (index_conflict (elt (elt *conflict* num) index))
+	 ; if num's goal pos(num) and num_goal's goal pos(num_goal) are in
+	 ; the same line ?
+	 (goal_conflict (elt (elt *conflict* num) num_goal))
+	 )
+    (if (/= index_conflict 0)
+	; all in the same line
+	(if (= goal_conflict index_conflict)
+	    ; (1 2 0 ...) is not linear conflict
+	    (if (and
+		 ; index is to the right of num
+		 (> index num)
+		 ; goal position of index is to the left
+		 ; of the goal position of num
+		 (< num num_goal))
+		; if two tiles are adjacent, then it's not linear conflict
+		; like (1 0 ...)
+		(let* ((adj-entry (elt *adj* num))
+		       (adj-num (elt *adj-num* num)))
+		  (loop for i from 1 to adj-num
+		     do (when (= (elt adj-entry i) num_goal)
+			  (return-from is-linear-conflict nil)))
+		  T)
+		nil)
+	    nil)
+	nil)
+    ))
 
 ; *** Helper Function ***
 
