@@ -22,8 +22,7 @@
       (xbinding (unify var (cdr xbinding) theta))
       ((occurs-p var xsub)
        'fail)
-      (t
-       (cons (cons var xsub) theta)))))
+      (t (cons (cons var xsub) theta)))))
 
 ; Example:
 ; var = z
@@ -64,42 +63,47 @@
     ))
 
 (defun var-p (x)
-  "all variables start with @"
+  "all variables start with $"
   (cond
     ((compound-p x) nil)
     ((listp x) nil)
-    ((eq (char (symbol-name x) 0) #\@) t)
+    ((eq (char (symbol-name x) 0) #\$) t)
     ; could only be a constant
     (t nil)
     ))
 
+(defun negate (x)
+    (make-compound :op '! :args x))
+
 (defstruct (compound (:conc-name nil)) op args)
+
+(provide 'unify)
 
 ;debug code
 (defvar *x1*
   (list
-   (make-compound :op 'King :args '@x)
-   (make-compound :op 'Greedy :args '@x)))
+   (make-compound :op 'King :args '$x)
+   (make-compound :op 'Greedy :args '$x)))
 
 (defvar *y1*
   (list
    (make-compound :op 'King :args 'JOHN)
-   (make-compound :op 'Greedy :args '@y)))
+   (make-compound :op 'Greedy :args '$y)))
 
 (defvar *x2*
-  (make-compound :op 'KNOWS :args (list 'John '@x)))
+  (make-compound :op 'KNOWS :args (list 'John '$x)))
 
 (defvar *y2*
   (make-compound
    :op 'KNOWS
-   :args (list '@y (make-compound :op 'Mother :args '@y))
+   :args (list '$y (make-compound :op 'Mother :args '$y))
    ))
 
 (defvar *x3*
-  '@x)
+  '$x)
 
 (defvar *y3*
-  (make-compound :op 'KNOWS :args (list '@y 'JOHN)))
+  (make-compound :op 'KNOWS :args (list '$y 'JOHN)))
 
 (defvar *theta3*
-  (list (list '@y (make-compound :op 'Mother :args '@x))))
+  (list (list '$y (make-compound :op 'Mother :args '$x))))
