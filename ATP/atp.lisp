@@ -30,12 +30,19 @@
 			 (cons triple rl)
 			 ; not nil, not finished. We have a new clause.
 			 ; we can now atp on the new set
-			 (atp set resolvent (cons triple rl)))))))
+			 (if (null (in-set set resolvent))
+			     (atp set resolvent (cons triple rl))
+			     ; resolvent already exist, try next pair
+			     (inference set n1 (1+ n2) rl))
+			 )))))
 	      ; n2 >= set-size
 	      (inference set (1+ n1) (1+ (1+ n1)) rl))
 	    ; n1 >= set-size: have tried all possible pairs
 	    'Fail)
 	))
+
+(defun in-set (set clause)
+  (find clause set :test #'equalp))
 
 ; *********  resolution  *********
 
