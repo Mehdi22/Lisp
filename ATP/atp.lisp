@@ -4,38 +4,38 @@
 (require 'unify)
 (require 'data)
 
-(defun atp (&optional (kb *kb-west*) (nq *nq-west*))
+(defun atp (&optional (kb *kb-west*) (nq *nq-west*) (rl nil))
   (let ((set (generate-set kb nq)))
-    (inference set 0 1)
+    (inference set 0 1 rl)
     ))
 
 (defun generate-set (kb nq)
   (cons nq kb))
 
-(defun inference (set n1 n2)
+(defun inference (set n1 n2 rl)
   (let ((set-size (list-length set)))
     (if (< n1 (1- set-size))
 	(if (< n2 set-size)
 	    (let* ((clause1 (nth n1 set))
 		   (clause2 (nth n2 set))
 		   (triple (resolution clause1 clause2)))
-	      (cond ((eq triple 'Fail)
-		     (inference set n1 (1+ n2)))
-		    (t
-		     (format t "T = ~a~%" triple)
-		     (let ((resolvent (third triple)))
-		       (if (null resolvent)
-			   nil
-			   (atp set resolvent))))))
-	      (inference set (1+ n1) (1+ (1+ n1))))
+	      (cond
+		; resolution failed, try next pair
+		((eq triple 'Fail)
+		 (inference set n1 (1+ n2) rl))
+		; resolution succeeded
+		(t (let ((resolvent (third triple)))
+		     (if (null resolvent)
+			 ; resolvent is nil, program ends
+			 (cons triple rl)
+			 ; not nil, not finished. We have a new clause.
+			 ; we can now atp on the new set
+			 (atp set resolvent (cons triple rl)))))))
+	      ; n2 >= set-size
+	      (inference set (1+ n1) (1+ (1+ n1)) rl))
+	    ; n1 >= set-size: have tried all possible pairs
 	    'Fail)
 	))
-
-(defun infer (set n1 n2)
-  (let ((clause1 (nth n1 set))
-	(clause2 (nth n2 set)))
-    (resolution clause1 clause2)
-    ))
 
 ; *********  resolution  *********
 
@@ -70,24 +70,24 @@
   "resolve clause1's n1th unit and clause2's n2th unit"
   (let* ((unit1 (nth n1 clause1))
 	 (unit2 (nth n2 clause2))
-	 (negate_num1 (negate-num unit1 0))
-	 (negate_num2 (negate-num unit2 0)))
-    (if (eql (mod (+ negate_num1 negate_num2) 2) 1)
-	(unify (remove-negate unit1 negate_num1)
-	       (remove-negate unit2 negate_num2))
+	 (negation_num1 (negation-num unit1 0))
+	 (negation_num2 (negation-num unit2 0)))
+    (if (eql (mod (+ negation_num1 negation_num2) 2) 1)
+	(unify (remove-negation unit1 negation_num1)
+	       (remove-negation unit2 negation_num2))
 	'Fail)
     ))
 
-(defun negate-num (unit num)
+(defun negation-num (unit num)
   "calculate unit's negation number"
   (if (compound-p unit)
       (if (eq (op unit) '!)
-	  (negate-num (args unit) (1+ num))
+	  (negation-num (args unit) (1+ num))
 	  num)
       num))
 
-(defun remove-negate (unit num)
+(defun remove-negation (unit num)
   "remove negation in order to unify"
   (if (> num 0)
-      (remove-negate (args unit) (1- num))
+      (remove-negation (args unit) (1- num))
       unit))

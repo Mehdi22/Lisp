@@ -2,7 +2,7 @@
 ; data.lisp
 ; variables represent example knowledge bases and negate queries
 
-(provide 'data)
+(require 'unify)
 
 ; 1. Colonel West
 
@@ -46,3 +46,4 @@
   (list
    (negate (make-compound :op 'Criminal :args 'West))))
 
+(provide 'data)

@@ -1,3 +1,21 @@
 Program: Automated Theorem Proving
 Author:	 Mengqi Zong
 Email:	 mz2326@columbia.edu
+
+Predicate: I use structure compound to represent predicates. For example, Know (John, Mary) is a compound whose op is 'Knows and args is '(John Mary).
+
+Variable: Every variable will start with symbol $. For example, $x is a variable x.
+
+Constant: Those does not start with symbol $ is a constant. For example, 'John is a constant.
+
+Negation: I use compound with op '! to represent negation. For example,  ¬American(West) will be (compound :op '! :args (compound :op 'American :args 'West)).
+
+Clause: I use list to represent clauses. For example, A V B V C will be a list '(A B C).
+
+Knowledge Base: Knowledge base is a list of clasues. Like, '(c1 c2 c3 c4).
+
+Negate Query: one clasue.
+
+
+
+

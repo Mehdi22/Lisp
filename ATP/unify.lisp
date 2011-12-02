@@ -1,4 +1,5 @@
-; w4701 instructional code
+; Automated Theorem Prover
+; unification module
 
 (defun unify (x y &optional (theta nil))
   (cond ((eql theta 'fail) 'fail)
@@ -24,12 +25,6 @@
        'fail)
       (t (cons (cons var xsub) theta)))))
 
-; Example:
-; var = z
-; x = KNOWS(y, John)
-; theta = ((y Mother(z)))
-; sub will make x = KNOWS(Mother(z), John)
-; then function occurs-p will return t
 (defun sub (theta x)
   "Substitute whatever can be substituted in x."
   (cond
@@ -73,37 +68,9 @@
     ))
 
 (defun negate (x)
-    (make-compound :op '! :args x))
+  "negate x"
+  (make-compound :op '! :args x))
 
 (defstruct (compound (:conc-name nil)) op args)
 
 (provide 'unify)
-
-;debug code
-(defvar *x1*
-  (list
-   (make-compound :op 'King :args '$x)
-   (make-compound :op 'Greedy :args '$x)))
-
-(defvar *y1*
-  (list
-   (make-compound :op 'King :args 'JOHN)
-   (make-compound :op 'Greedy :args '$y)))
-
-(defvar *x2*
-  (make-compound :op 'KNOWS :args (list 'John '$x)))
-
-(defvar *y2*
-  (make-compound
-   :op 'KNOWS
-   :args (list '$y (make-compound :op 'Mother :args '$y))
-   ))
-
-(defvar *x3*
-  '$x)
-
-(defvar *y3*
-  (make-compound :op 'KNOWS :args (list '$y 'JOHN)))
-
-(defvar *theta3*
-  (list (list '$y (make-compound :op 'Mother :args '$x))))
