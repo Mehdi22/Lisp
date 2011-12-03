@@ -2,6 +2,13 @@ Program: Automated Theorem Proving
 Author:	 Mengqi Zong
 Email:	 mz2326@columbia.edu
 
+1. How to run the program
+
+Compile the follow lisp code in order: unify.lisp, data.lisp, atp.lisp
+
+data.lisp defines some example knowledge bases and negated queries for the test.
+
+2. Data Representation
 Predicate: I use structure compound to represent predicates. For example, Know (John, Mary) is a compound whose op is 'Knows and args is '(John Mary).
 
 Variable: Every variable will start with symbol $. For example, $x is a variable x.
@@ -14,8 +21,102 @@ Clause: I use list to represent clauses. For example, A V B V C will be a list '
 
 Knowledge Base: Knowledge base is a list of clasues. Like, '(c1 c2 c3 c4).
 
-Negate Query: one clasue.
+Negated Query: one clasue.
 
+3. Resolution Strategies
 
+a) unit preference
+In atp.lisp, I will sort the knowledge base first before proving. After sorting, caluses with less units will be in the front of the knowledge base. This means they will be resolved first. So, unit clause will, not surprisingly, resolve at first.
 
+b) set of support
 
+In atp.lisp, I make negated query in the fornt of the set. That is, set is (nq kb). Also, newly created clause will be put in the front of the set, and atp will begin proving at the front of set (This is done in a recursion way).
+
+So, by adding the nq in the fornt of set and always adding newly created clause in the front of the set and then restart proving in the new set is actually an implementation of set of support.
+
+4. Examples
+
+a) Colonel West and Nono
+
+CL-USER> (atp *kb-west* *nq-west*)
+(((#S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP ENEMY :ARGS (NONO AMERICA))))
+  (#S(COMPOUND :OP ENEMY :ARGS (NONO AMERICA))) NIL)
+ ((#S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP AMERICAN :ARGS WEST))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP ENEMY :ARGS (NONO AMERICA))))
+  (#S(COMPOUND :OP AMERICAN :ARGS WEST))
+  (#S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP ENEMY :ARGS (NONO AMERICA)))))
+ ((#S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP AMERICAN :ARGS WEST))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP HOSTILE :ARGS NONO)))
+  (#S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP ENEMY :ARGS ($Z AMERICA)))
+   #S(COMPOUND :OP HOSTILE :ARGS $Z))
+  (#S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP AMERICAN :ARGS WEST))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP ENEMY :ARGS (NONO AMERICA)))))
+ ((#S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP AMERICAN :ARGS WEST))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP HOSTILE :ARGS NONO))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP MISSILE :ARGS M1)))
+  (#S(COMPOUND :OP MISSILE :ARGS M1))
+  (#S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP AMERICAN :ARGS WEST))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP HOSTILE :ARGS NONO))))
+ ((#S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP AMERICAN :ARGS WEST))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP WEAPON :ARGS M1))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP HOSTILE :ARGS NONO)))
+  (#S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP MISSILE :ARGS $Y))
+   #S(COMPOUND :OP WEAPON :ARGS $Y))
+  (#S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP AMERICAN :ARGS WEST))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP HOSTILE :ARGS NONO))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP MISSILE :ARGS M1))))
+ ((#S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP AMERICAN :ARGS WEST))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP WEAPON :ARGS M1))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP HOSTILE :ARGS NONO))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP MISSILE :ARGS M1)))
+  (#S(COMPOUND :OP MISSILE :ARGS M1))
+  (#S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP AMERICAN :ARGS WEST))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP WEAPON :ARGS M1))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP HOSTILE :ARGS NONO))))
+ ((#S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP AMERICAN :ARGS WEST))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP WEAPON :ARGS $Y))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP HOSTILE :ARGS NONO))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP MISSILE :ARGS $Y))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP OWNS :ARGS (NONO $Y))))
+  (#S(COMPOUND :OP OWNS :ARGS (NONO M1)))
+  (#S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP AMERICAN :ARGS WEST))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP WEAPON :ARGS M1))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP HOSTILE :ARGS NONO))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP MISSILE :ARGS M1))))
+ ((#S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP AMERICAN :ARGS WEST))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP WEAPON :ARGS $Y))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP SELLS :ARGS (WEST $Y $Z)))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP HOSTILE :ARGS $Z)))
+  (#S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP MISSILE :ARGS $Y))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP OWNS :ARGS (NONO $Y)))
+   #S(COMPOUND :OP SELLS :ARGS (WEST $Y NONO)))
+  (#S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP AMERICAN :ARGS WEST))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP WEAPON :ARGS $Y))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP HOSTILE :ARGS NONO))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP MISSILE :ARGS $Y))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP OWNS :ARGS (NONO $Y)))))
+ ((#S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP CRIMINAL :ARGS WEST)))
+  (#S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP AMERICAN :ARGS $X))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP WEAPON :ARGS $Y))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP SELLS :ARGS ($X $Y $Z)))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP HOSTILE :ARGS $Z))
+   #S(COMPOUND :OP CRIMINAL :ARGS $X))
+  (#S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP AMERICAN :ARGS WEST))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP WEAPON :ARGS $Y))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP SELLS :ARGS (WEST $Y $Z)))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP HOSTILE :ARGS $Z)))))
+
+b) Symbols
+
+CL-USER> (atp *kb-symbol* *nq-symbol*)
+(((#S(COMPOUND :OP ! :ARGS G)) (G) NIL)
+ ((#S(COMPOUND :OP ! :ARGS F) #S(COMPOUND :OP ! :ARGS G)) (F)
+  (#S(COMPOUND :OP ! :ARGS G)))
+ ((#S(COMPOUND :OP ! :ARGS E) #S(COMPOUND :OP ! :ARGS F)
+   #S(COMPOUND :OP ! :ARGS G))
+  (E) (#S(COMPOUND :OP ! :ARGS F) #S(COMPOUND :OP ! :ARGS G)))
+ ((#S(COMPOUND :OP ! :ARGS D))
+  (#S(COMPOUND :OP ! :ARGS E) #S(COMPOUND :OP ! :ARGS F)
+   #S(COMPOUND :OP ! :ARGS G) D)
+  (#S(COMPOUND :OP ! :ARGS E) #S(COMPOUND :OP ! :ARGS F)
+   #S(COMPOUND :OP ! :ARGS G))))

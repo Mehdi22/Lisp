@@ -1,5 +1,10 @@
-; Automated Theorem Prover
-; unification module
+; Project: Automated Theorem Prover
+; unify.lisp
+; Description: unification module
+;              unify and unify-var is W4701 instructional code
+; Author: Mengqi Zong
+; Email: mz2326@columbia.edu
+
 
 (defun unify (x y &optional (theta nil))
   (cond ((eql theta 'fail) 'fail)

@@ -1,16 +1,35 @@
-; Automated Theorem Prover
+; Project: Automated Theorem Prover
 ; atp.lisp
+; Description: automated theorem prover main function
+; Author: Mengqi Zong
+; Email: mz2326@columbia.edu
 
 (require 'unify)
-(require 'data)
 
-(defun atp (&optional (kb *kb-west*) (nq *nq-west*) (rl nil))
-  (let ((set (generate-set kb nq)))
-    (inference set 0 1 rl)
+(defun atp (kb nq)
+  (let ((kb-cpy (copy-list kb))
+	(nq-cpy (copy-list nq)))
+;    (setf kb-cpy (sort-set kb-cpy))
+    (prove kb-cpy nq-cpy nil)
     ))
 
 (defun generate-set (kb nq)
   (cons nq kb))
+
+(defun sort-set (set)
+  "sort the set by each clause's number of units, clause with less units
+   is in the front of the list represents the set"
+  (sort set #'less-length))
+
+(defun less-length (clause1 clause2)
+  (let ((l1 (list-length clause1))
+	(l2 (list-length clause2)))
+    (if (< l1 l2) T nil)))
+
+(defun prove (kb nq rl)
+  "rl stands for resolution-list, the return value"
+  (let ((set (generate-set kb nq)))
+    (inference set 0 1 rl)))
 
 (defun inference (set n1 n2 rl)
   (let ((set-size (list-length set)))
@@ -29,9 +48,15 @@
 			 ; resolvent is nil, program ends
 			 (cons triple rl)
 			 ; not nil, not finished. We have a new clause.
-			 ; we can now atp on the new set
+			 ; we can now prove on the new set
 			 (if (null (in-set set resolvent))
-			     (atp set resolvent (cons triple rl))
+			     (if (resolution-consistent rl triple)
+				 ; previous resolutions are related with this
+				 (prove set resolvent (cons triple rl))
+				 ; previous resolutions are not related
+				 ; this means previous resolution has nothing
+				 ; to with the "nil" in the future
+				 (prove set resolvent (cons triple nil)))
 			     ; resolvent already exist, try next pair
 			     (inference set n1 (1+ n2) rl))
 			 )))))
@@ -43,6 +68,15 @@
 
 (defun in-set (set clause)
   (find clause set :test #'equalp))
+
+(defun resolution-consistent (rl triple)
+  (let* ((prev-clause (third (car rl)))
+	 (clause1 (first triple))
+	 (clause2 (second triple)))
+    (or
+     (equalp prev-clause clause1)
+     (equalp prev-clause clause2))
+    ))
 
 ; *********  resolution  *********
 

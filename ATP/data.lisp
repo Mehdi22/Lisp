@@ -1,10 +1,12 @@
-; Automated Theorem Prover
+; Project: Automated Theorem Prover
 ; data.lisp
-; variables represent example knowledge bases and negate queries
+; Description: example knowledge bases and negate queries
+; Author: Mengqi Zong
+; Email: mz2326@columbia.edu
 
 (require 'unify)
 
-; 1. Colonel West
+; 1. Colonel West Test
 
 (defvar *kb-west*
   (list
@@ -45,5 +47,26 @@
 (defvar *nq-west*
   (list
    (negate (make-compound :op 'Criminal :args 'West))))
+
+; 2. resolvent relavence check test
+; ** Without resolution consistence checking, it will return not relevent
+; ** resolution triples
+
+(defvar *kb-symbol*
+  (list
+   ; !A V !B V !C V D
+   (list (negate 'A) (negate 'B) (negate 'C) 'D)
+   ; !E V !F V !G V D
+   (list (negate 'E) (negate 'F) (negate 'G) 'D)
+   '(A)
+   '(B)
+   '(E)
+   '(F)
+   '(G)
+   ))
+
+(defvar *nq-symbol*
+  (list
+   (negate 'D)))
 
 (provide 'data)
