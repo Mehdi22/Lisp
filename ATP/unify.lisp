@@ -5,7 +5,6 @@
 ; Author: Mengqi Zong
 ; Email: mz2326@columbia.edu
 
-
 (defun unify (x y &optional (theta nil))
   (cond ((eql theta 'fail) 'fail)
 	((eql x y) theta)

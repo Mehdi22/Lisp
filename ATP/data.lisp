@@ -69,6 +69,7 @@
   (list
    (negate 'D)))
 
+; 3. simple test for snf
 (defvar *kb-evil*
   (list
    ; Vx King(x)^Greedy(x)=>Evil(x)
@@ -81,12 +82,12 @@
 		   (make-compound
 		    :op '^
 		    :args (list
-			    (make-compound
-			     :op 'King
-			     :args '$x)
-			    (make-compound
-			     :op 'Greedy
-			     :args '$x)))
+			   (make-compound
+			    :op 'King
+			    :args '$x)
+			   (make-compound
+			    :op 'Greedy
+			    :args '$x)))
 		   (make-compound
 		    :op 'Evil
 		    :args '$x)))))
@@ -103,7 +104,102 @@
    (negate (make-compound :op 'Evil :args 'John))))
 
 
-; used to test function snf: (snf *love*)
+; 4. West SNF
+(defvar *kb-west-snf*
+  (list
+   ; [x[y[z((American(x)^Weapon(y)^Sells(x,y,z)^Hostile(z))=>Criminal(x))
+   (make-compound
+    :op '[$x
+    :args (make-compound
+	   :op '[$y
+	   :args (make-compound
+		  :op '[$z
+		  :args (make-compound
+			 :op '=>
+			 :args (list
+				(make-compound
+				 :op '^
+				 :args (list
+					(make-compound
+					 :op 'American
+					 :args '$x)
+					(make-compound
+					 :op 'Weapon
+					 :args '$y)
+					(make-compound
+					 :op 'Sells
+					 :args '($x $y $z))
+					(make-compound
+					 :op 'Hostile
+					 :args '$z)))
+				(make-compound
+				 :op 'Criminal
+				 :args '$x))
+			 ))))
+   ; ]y (Owns(Nono, y) ^ Missile(y))
+   (make-compound
+    :op ']$y
+    :args (make-compound
+	   :op '^
+	   :args (list
+		  (make-compound
+		   :op 'Owns
+		   :args '(Nono $y))
+		  (make-compound
+		   :op 'Missile
+		   :args '$y))))
+   ; [y (Missile(y) ^ Owns(Nono,y) => Sells(West, y, Nono))
+   (make-compound
+    :op '[$y
+    :args (make-compound
+	    :op '=>
+	    :args (list
+		   (make-compound
+		    :op '^
+		    :args (list
+			   (make-compound
+			    :op 'Missile
+			    :args '$y)
+			   (make-compound
+			    :op 'Owns
+			    :args '(Nono $y))))
+		   (make-compound
+		    :op 'Sells
+		    :args '(West $y Nono)))))
+   ; [y (Missile(y) => Weapon(y))
+   (make-compound
+    :op '[$y
+    :args (make-compound
+	   :op '=>
+	   :args (list
+		  (make-compound
+		   :op 'Missile
+		   :args '$y)
+		  (make-compound
+		   :op 'Weapon
+		   :args '$y))))
+   ; [z (Enemy(z, America) => Hostile(z))
+   (make-compound
+    :op '[$z
+    :args (make-compound
+	   :op '=>
+	   :args (list
+		  (make-compound
+		   :op 'Enemy
+		   :args '($z America))
+		  (make-compound
+		   :op 'Hostile
+		   :args '$z))))
+   ; American(West)
+   (make-compound :op 'American :args 'West)
+   ; Enemy(Nono, America)
+   (make-compound :op 'Enemy :args '(Nono America))
+   ))
+
+(defvar *nq-west-snf*
+  (negate (make-compound :op 'Criminal :args 'West)))
+
+; 5. used to test function snf: (snf *love*)
 (defvar *love*
   ; Vx ((Vy Animal(y)=>Loves(x,y))=>Ez Loves(z,x))
   ; ->
@@ -131,5 +227,38 @@
 			  :op 'Loves
 			  :args '($z $x)))
 		  )))))
+
+; 6. used to test function combine-predicate: (combine-predicate *nest*)
+(defvar *nest*
+  ; ^(A B C)
+  ; A = ^(E F)
+  ; E = ^(G H)
+  ; B = V(I J)
+  ; J = V(K L)
+  ;->
+  ; G ^ H ^ F ^ (I V K V L) ^ C
+  (make-compound
+   :op '^
+   :args (list
+	  ; A
+	  (make-compound
+	   :op '^
+	   :args (list
+		  ; E
+		  (make-compound
+		   :op '^
+		   :args '(G H))
+		  'F))
+	  ; B
+	  (make-compound
+	   :op 'V
+	   :args (list
+		  'I
+		  ; J
+		  (make-compound
+		   :op 'V
+		   :args '(K L))))
+	  'C
+	   )))
 
 (provide 'data)

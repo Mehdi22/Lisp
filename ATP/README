@@ -4,7 +4,7 @@ Email:	 mz2326@columbia.edu
 
 1. How to run the program
 
-Compile the follow lisp code in order: unify.lisp, data.lisp, atp.lisp
+Compile the follow lisp code in order: unify.lisp, data.lisp, snf.lisp, atp.lisp
 
 data.lisp defines some example knowledge bases and negated queries for the test.
 
@@ -19,6 +19,15 @@ Negation: I use compound with op '! to represent negation. For example,  ¬Ameri
 
 Clause: I use list to represent clauses. For example, A V B V C will be a list '(A B C).
 
+Quantifier: Universal	[$x
+            Existential	]$x
+
+Predicate: 1) Biconditional <=>
+	   2) Implication =>
+	   3) Negation !
+	   4) AND ^
+	   5) OR V
+
 Knowledge Base: Knowledge base is a list of clasues. Like, '(c1 c2 c3 c4).
 
 Negated Query: one clasue.
@@ -30,11 +39,27 @@ In atp.lisp, I will sort the knowledge base first before proving. After sorting,
 
 b) set of support
 
-In atp.lisp, I make negated query in the fornt of the set. That is, set is (nq kb). Also, newly created clause will be put in the front of the set, and atp will begin proving at the front of set (This is done in a recursion way).
+In atp.lisp, I make negated query in the fornt of the set. That is, set is (nq kb). Also, newly created clause will be put in the front of the set, and atp will begin proving at the front of set (This is done in a depth first way).
 
 So, by adding the nq in the fornt of set and always adding newly created clause in the front of the set and then restart proving in the new set is actually an implementation of set of support.
 
-4. Examples
+4. SNF conversion
+
+a) eliminate biconditionals
+b) eliminate implications
+c) eliminate quantifiers
+d) standardize variables
+   Not implemented. Because I think it's not rational to write a sentence in such a way: VxP(x)^ExQ(x). So it is not correct in my definition of SNF.
+e) distribute and over or
+f) compatiblity processing (due to my implementation)
+
+Howto: To snf a knowledge base, use (snf-set kb);
+       To snf a negated query, use (snf-clause nq);
+       * kb and nq are variables which need to be defined.
+
+5. Sample Running
+
+* all data are in data.lisp
 
 a) Colonel West and Nono
 
@@ -120,3 +145,89 @@ CL-USER> (atp *kb-symbol* *nq-symbol*)
    #S(COMPOUND :OP ! :ARGS G) D)
   (#S(COMPOUND :OP ! :ARGS E) #S(COMPOUND :OP ! :ARGS F)
    #S(COMPOUND :OP ! :ARGS G))))
+
+c) King John with SNF
+
+CL-USER> (atp (snf-set *kb-evil*) (snf-clause *nq-evil*))
+(((#S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP GREEDY :ARGS JOHN)))
+  (#S(COMPOUND :OP GREEDY :ARGS JOHN)) NIL)
+ ((#S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP KING :ARGS JOHN))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP GREEDY :ARGS JOHN)))
+  (#S(COMPOUND :OP KING :ARGS JOHN))
+  (#S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP GREEDY :ARGS JOHN))))
+ ((#S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP EVIL :ARGS JOHN)))
+  (#S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP KING :ARGS $X))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP GREEDY :ARGS $X))
+   #S(COMPOUND :OP EVIL :ARGS $X))
+  (#S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP KING :ARGS JOHN))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP GREEDY :ARGS JOHN)))))
+
+d) Colonel West Nono with SNF
+
+CL-USER> (atp (snf-set *kb-west-snf*) (snf-clause *nq-west-snf*))
+(((#S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP ENEMY :ARGS (NONO AMERICA))))
+  (#S(COMPOUND :OP ENEMY :ARGS (NONO AMERICA))) NIL)
+ ((#S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP AMERICAN :ARGS WEST))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP ENEMY :ARGS (NONO AMERICA))))
+  (#S(COMPOUND :OP AMERICAN :ARGS WEST))
+  (#S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP ENEMY :ARGS (NONO AMERICA)))))
+ ((#S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP AMERICAN :ARGS WEST))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP HOSTILE :ARGS NONO)))
+  (#S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP ENEMY :ARGS ($Z AMERICA)))
+   #S(COMPOUND :OP HOSTILE :ARGS $Z))
+  (#S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP AMERICAN :ARGS WEST))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP ENEMY :ARGS (NONO AMERICA)))))
+ ((#S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP AMERICAN :ARGS WEST))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP HOSTILE :ARGS NONO))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP MISSILE :ARGS C1)))
+  (#S(COMPOUND :OP MISSILE :ARGS C1))
+  (#S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP AMERICAN :ARGS WEST))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP HOSTILE :ARGS NONO))))
+ ((#S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP AMERICAN :ARGS WEST))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP WEAPON :ARGS C1))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP HOSTILE :ARGS NONO)))
+  (#S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP MISSILE :ARGS $Y))
+   #S(COMPOUND :OP WEAPON :ARGS $Y))
+  (#S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP AMERICAN :ARGS WEST))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP HOSTILE :ARGS NONO))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP MISSILE :ARGS C1))))
+ ((#S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP AMERICAN :ARGS WEST))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP WEAPON :ARGS C1))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP HOSTILE :ARGS NONO))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP MISSILE :ARGS C1)))
+  (#S(COMPOUND :OP MISSILE :ARGS C1))
+  (#S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP AMERICAN :ARGS WEST))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP WEAPON :ARGS C1))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP HOSTILE :ARGS NONO))))
+ ((#S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP AMERICAN :ARGS WEST))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP WEAPON :ARGS $Y))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP HOSTILE :ARGS NONO))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP MISSILE :ARGS $Y))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP OWNS :ARGS (NONO $Y))))
+  (#S(COMPOUND :OP OWNS :ARGS (NONO C1)))
+  (#S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP AMERICAN :ARGS WEST))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP WEAPON :ARGS C1))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP HOSTILE :ARGS NONO))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP MISSILE :ARGS C1))))
+ ((#S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP AMERICAN :ARGS WEST))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP WEAPON :ARGS $Y))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP SELLS :ARGS (WEST $Y $Z)))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP HOSTILE :ARGS $Z)))
+  (#S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP MISSILE :ARGS $Y))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP OWNS :ARGS (NONO $Y)))
+   #S(COMPOUND :OP SELLS :ARGS (WEST $Y NONO)))
+  (#S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP AMERICAN :ARGS WEST))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP WEAPON :ARGS $Y))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP HOSTILE :ARGS NONO))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP MISSILE :ARGS $Y))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP OWNS :ARGS (NONO $Y)))))
+ ((#S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP CRIMINAL :ARGS WEST)))
+  (#S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP AMERICAN :ARGS $X))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP WEAPON :ARGS $Y))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP SELLS :ARGS ($X $Y $Z)))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP HOSTILE :ARGS $Z))
+   #S(COMPOUND :OP CRIMINAL :ARGS $X))
+  (#S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP AMERICAN :ARGS WEST))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP WEAPON :ARGS $Y))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP SELLS :ARGS (WEST $Y $Z)))
+   #S(COMPOUND :OP ! :ARGS #S(COMPOUND :OP HOSTILE :ARGS $Z)))))
