@@ -4,20 +4,13 @@ Email:	 mz2326@columbia.edu
 
 1. How to run the program
 
-Compile the follow lisp code in order: unify.lisp, data.lisp, snf.lisp, atp.lisp
+Compile the following lisp code in order: unify.lisp, data.lisp, snf.lisp, atp.lisp
 
-data.lisp defines some example knowledge bases and negated queries for the test.
+data.lisp defines some example knowledge bases and negated queries for testing.
 
 2. Data Representation
-Predicate: I use structure compound to represent predicates. For example, Know (John, Mary) is a compound whose op is 'Knows and args is '(John Mary).
 
-Variable: Every variable will start with symbol $. For example, $x is a variable x.
-
-Constant: Those does not start with symbol $ is a constant. For example, 'John is a constant.
-
-Negation: I use compound with op '! to represent negation. For example,  ¬American(West) will be (compound :op '! :args (compound :op 'American :args 'West)).
-
-Clause: I use list to represent clauses. For example, A V B V C will be a list '(A B C).
+Relation: I use structure compound to represent relation. For example, Know (John, Mary) is a compound whose op is 'Knows and args is '(John Mary).
 
 Quantifier: Universal	[$x
             Existential	]$x
@@ -28,6 +21,12 @@ Predicate: 1) Biconditional <=>
 	   4) AND ^
 	   5) OR V
 
+Variable: Every variable will start with symbol $. For example, $x is a variable x.
+
+Constant: Those does not start with symbol $ is a constant. For example, 'John is a constant.
+
+Clause: I use list to represent clauses. For example, A V B V C will be like '(A B C).
+
 Knowledge Base: Knowledge base is a list of clasues. Like, '(c1 c2 c3 c4).
 
 Negated Query: one clasue.
@@ -35,11 +34,11 @@ Negated Query: one clasue.
 3. Resolution Strategies
 
 a) unit preference
-In atp.lisp, I will sort the knowledge base first before proving. After sorting, caluses with less units will be in the front of the knowledge base. This means they will be resolved first. So, unit clause will, not surprisingly, resolve at first.
+In atp.lisp, code will sort the knowledge base first before proving. After sorting, clauses with less units will be in the front of the knowledge base. This means they will be resolved first. So, unit clauses will, not surprisingly, resolve at first.
 
 b) set of support
 
-In atp.lisp, I make negated query in the fornt of the set. That is, set is (nq kb). Also, newly created clause will be put in the front of the set, and atp will begin proving at the front of set (This is done in a depth first way).
+In atp.lisp, I make the negated query in the fornt of the set. That is, set is (nq kb). Also, newly created clause will be put in the front of the set, and atp will begin proving at the front of set (This is done by recursion, in a depth first way).
 
 So, by adding the nq in the fornt of set and always adding newly created clause in the front of the set and then restart proving in the new set is actually an implementation of set of support.
 
