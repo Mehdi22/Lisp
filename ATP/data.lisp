@@ -69,4 +69,67 @@
   (list
    (negate 'D)))
 
+(defvar *kb-evil*
+  (list
+   ; Vx King(x)^Greedy(x)=>Evil(x)
+   (list
+    (make-compound
+     :op '[$x
+     :args (make-compound
+	    :op '=>
+	    :args (list
+		   (make-compound
+		    :op '^
+		    :args (list
+			    (make-compound
+			     :op 'King
+			     :args '$x)
+			    (make-compound
+			     :op 'Greedy
+			     :args '$x)))
+		   (make-compound
+		    :op 'Evil
+		    :args '$x)))))
+   ; King(Richard)
+   (list (make-compound :op 'King :args 'Richard))
+   ; King(John)
+   (list (make-compound :op 'King :args 'John))
+   ; Greedy(John)
+   (list (make-compound :op 'Greedy :args 'John))
+   ))
+
+(defvar *nq-evil*
+  (list
+   (negate (make-compound :op 'Evil :args 'John))))
+
+
+; used to test function snf: (snf *love*)
+(defvar *love*
+  ; Vx ((Vy Animal(y)=>Loves(x,y))=>Ez Loves(z,x))
+  ; ->
+  ; (Animal(F(x)) V Loves(G(x), x)) ^ (!Loves(x, F(x)) V Loves(G(x), x))
+  (list
+   (make-compound
+    :op '[$x
+    :args (make-compound
+	   :op '=>
+	   :args (list
+		  (make-compound
+	           :op '[$y
+	           :args (make-compound
+		          :op '=>
+		          :args (list
+			         (make-compound
+				  :op 'Animal
+				  :args '$y)
+				 (make-compound
+				  :op 'Loves
+				  :args '($x $y)))))
+		  (make-compound
+		   :op ']$z
+		   :args (make-compound
+			  :op 'Loves
+			  :args '($z $x)))
+		  )))))
+
 (provide 'data)
