@@ -1,4 +1,4 @@
-# Project:	AI HW2 - eight puzzle
+# Project:	The Eight Puzzle Problem
 # Name:		Mengqi Zong
 # Email:	mz2326@columbia.edu
 
@@ -60,7 +60,7 @@ So, linear conflict heuristic is monotone and admissible.
 
 a) Example 1
 
-# a.1 misplaced-tiles 
+# a.1 misplaced-tiles
 
 CL-USER> (solve-puzzle)
 Initial state: (2 8 5 1 0 7 3 6 4)
