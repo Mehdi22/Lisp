@@ -9,7 +9,7 @@
 (defun atp (kb nq)
   (let ((kb-cpy (copy-list kb))
 	(nq-cpy (copy-list nq)))
-;    (setf kb-cpy (sort-set kb-cpy))
+    (setf kb-cpy (sort-set kb-cpy))
     (prove kb-cpy nq-cpy nil)
     ))
 
