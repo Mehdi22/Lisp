@@ -1,0 +1,89 @@
+;;
+; Emacs Configuration File
+;
+; Author: Mengqi Zong <zongmengqi@gmail.com>
+;
+
+; hungry delete
+(setq c-hungry-delete-key t)
+
+; F8 - shell
+(global-set-key [(f8)] 'shell)
+
+; F9 - compile
+(global-set-key [(f9)] 'compile)
+(setq compilation-window-height 8)
+
+(setq compilation-finish-function
+      (lambda (buf str)
+
+        (if (string-match "exited abnormally" str)
+
+            ;;there were errors
+            (message "compilation errors, press C-x ` to visit")
+
+          ;;no errors, make the compilation window go away in 0.5 seconds
+          (run-at-time 0.5 nil 'delete-windows-on buf)
+          (message "NO COMPILATION ERRORS!"))))
+
+; syntax colorization
+(global-font-lock-mode 1)
+
+; c mode by Benjamin Rutt, spaces indentation only
+(require 'cc-mode)
+(defun my-build-tab-stop-list (width)
+  (let ((num-tab-stops (/ 80 width))
+	(counter 1)
+	(ls nil))
+    (while (<= counter num-tab-stops)
+      (setq ls (cons (* width counter) ls))
+      (setq counter (1+ counter)))
+    (set (make-local-variable 'tab-stop-list) (nreverse ls))))
+(defun my-c-mode-common-hook ()
+  (setq tab-width 8) ;; change this to taste, this is what K&R uses :)
+  (my-build-tab-stop-list tab-width)
+  (setq c-basic-offset tab-width)
+  (setq indent-tabs-mode nil)) ;; force only spaces for indentation
+(add-hook 'c-mode-common-hook 'my-c-mode-common-hook)
+
+; lisp indentation
+(add-hook 'lisp-mode-hook '(lambda ()
+  (local-set-key (kbd "RET") 'newline-and-indent)))
+
+; python mode
+(require 'auto-complete)
+(global-auto-complete-mode t)
+
+(require 'python-mode)
+(add-to-list 'auto-mode-alist '("\\.py\\'" . python-mode))
+
+; show trailing whitespace
+; (setq-default show-trailing-whitespace t)
+
+; show line number
+(global-linum-mode t)
+
+; show column number
+(column-number-mode t)
+
+; flyspell
+(add-hook 'LaTeX-mode-hook 'turn-on-flyspell)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(custom-set-variables
+  ;; custom-set-variables was added by Custom.
+  ;; If you edit it by hand, you could mess it up, so be careful.
+  ;; Your init file should contain only one such instance.
+  ;; If there is more than one, they won't work right.
+ '(column-number-mode t)
+ '(cua-mode t nil (cua-base))
+ '(show-paren-mode t)
+ '(text-mode-hook (quote (text-mode-hook-identify))))
+(custom-set-faces
+  ;; custom-set-faces was added by Custom.
+  ;; If you edit it by hand, you could mess it up, so be careful.
+  ;; Your init file should contain only one such instance.
+  ;; If there is more than one, they won't work right.
+ )
+(put 'set-goal-column 'disabled nil)
